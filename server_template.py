@@ -1,4 +1,5 @@
 import socket
+import threading
 
 from typing import Tuple
 
@@ -29,9 +30,7 @@ def socket_handler(
     inbound_message = inbound_message_raw
 
     print(f"Menerima input dari {source_addr}: {inbound_message}")
-    outgoing_message = inbound_message_raw
-    outgoing_message_raw = outgoing_message
-    sc.sendto(outgoing_message_raw, source_addr)
+
 
 
 def main():
@@ -41,8 +40,8 @@ def main():
         sc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sc.bind((SERVER_IP, SERVER_PORT))
 
-        print("Contoh Socket Server UDP Multithreaded")
-        print("Tekan Ctrl/CMD+C untuk menghentikan program")
+        print("Server Successfully Started")
+        print("Press Ctrl/CMD+C for end the program")
 
         while True:
             inbound_message_raw, source_addr = sc.recvfrom(BUFFER_SIZE)
