@@ -1,3 +1,4 @@
+import re
 import socket
 import threading
 
@@ -15,6 +16,9 @@ def request_parser(request_message_raw: bytearray, source_address: Tuple[str, in
     # This method return a str.
     # Anda boleh menambahkan helper fungsi/method sebanyak yang Anda butuhkan selama 
     # TIDAK MENGUBAH ATAUPUN MENGHAPUS SPEC (parameter dan return type) YANG DIMINTA.
+    #Decode dns request message from client to get header, QUestion, and Answer
+
+    
     pass
 
 def response_parser(response_mesage_raw: bytearray) -> str:
@@ -22,14 +26,17 @@ def response_parser(response_mesage_raw: bytearray) -> str:
     # This method return a str.
     # Anda boleh menambahkan helper fungsi/method sebanyak yang Anda butuhkan selama 
     # TIDAK MENGUBAH ATAUPUN MENGHAPUS  SPEC (parameter dan return type) YANG DIMINTA.
+
     pass
 
 def socket_handler(
     sc: socket.socket, inbound_message_raw: bytearray, source_addr: Tuple[str, int]
 ):
-    inbound_message = inbound_message_raw
-
-    print(f"Menerima input dari {source_addr}: {inbound_message}")
+    
+    #Decode dns request message from client (Headers, Question, Answers only) 
+    sc.sendto(inbound_message_raw, (IP_ASDOS, UDP_ASDOS))
+    reply = sc.recv(512)
+    print(reply)
 
 
 
