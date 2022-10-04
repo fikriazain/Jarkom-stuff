@@ -11,18 +11,20 @@ SERVER_IP =  ""
 IP_ASDOS = "34.101.92.60"
 UDP_ASDOS = 5353
 
-def request_header(req: bytearray):
+def request_header(req):
     id_0 = int.from_bytes(req[0:2], "big")
-    qr_1 = (req[2:3] & 0x80) >> 7
-    opcode_2 = (req[2:3] & 0x78) >> 3
-    aa_3 = (req[2:3] & 0x04) >> 2
-    tc_4 = (req[2:3] & 0x02) >> 1
-    rd_5 = (req[2:3] & 0x01)
-    ra_6 = (req[3:4] & 0x80) >> 7
-    z_7 =  (req[3:4] & 0x40) >> 6
-    ad_8 = (req[3:4] & 0x20) >> 5
-    cd_9 = (req[3:4] & 0x10) >> 4
-    rcode_10 = (req[3:4] & 0x08)
+    index2 = int.from_bytes(req[2:3], "big")
+    index3 = int.from_bytes(req[3:4], "big")
+    qr_1 = index2 & 0x80 >> 7
+    opcode_2 = index2 & 0x78 >> 3
+    aa_3 = index2 & 0x04 >> 2
+    tc_4 = index2 & 0x02 >> 1
+    rd_5 = index2 & 0x01
+    ra_6 = index3 & 0x80 >> 7
+    z_7 =  index3 & 0x40 >> 6
+    ad_8 = index3 & 0x20 >> 5
+    cd_9 = index3 & 0x10 >> 4
+    rcode_10 = index3 & 0x08
     qdcount_11 = int.from_bytes(req[4:6], "big")
     ancount_12 = int.from_bytes(req[6:8], "big")
     nscount_13 = int.from_bytes(req[8:10], "big")
