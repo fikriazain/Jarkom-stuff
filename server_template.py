@@ -10,12 +10,13 @@ SERVER_IP =  ""
 
 IP_ASDOS = "34.101.92.60"
 UDP_ASDOS = 5353
+CLIENT_ADDR = tuple()
 
 def request_header(req):
     id_0 = int.from_bytes(req[0:2], "big")
-    index2 = int.from_bytes(req[2:3], "big")
+    index2 = req[2]
     index3 = int.from_bytes(req[3:4], "big")
-    qr_1 = index2 & 0x80 >> 7
+    qr_1 = index2 & 0b10000000 >> 7
     opcode_2 = index2 & 0x78 >> 3
     aa_3 = index2 & 0x04 >> 2
     tc_4 = index2 & 0x02 >> 1
@@ -91,9 +92,17 @@ def socket_handler(
 ):
     
     #Decode dns request message from client (Headers, Question, Answers only)
-    sc.sendto(inbound_message_raw, (IP_ASDOS, UDP_ASDOS))
+    print(inbound_message_raw)
+    global CLIENT_ADDR
+    if source_addr[0] != IP_ASDOS:
+        CLIENT_ADDR = source_addr
+        outgoing_addr = (IP_ASDOS, UDP_ASDOS)
+        print("ini dari client")
+    else:
+        outgoing_addr = CLIENT_ADDR
+        print("ini dari asdos")
+    sc.sendto(inbound_message_raw, outgoing_addr)
     reply = sc.recv(512)
-    print(reply)
 
 
 
