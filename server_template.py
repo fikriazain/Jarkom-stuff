@@ -52,7 +52,7 @@ def request_question(req: bytearray):
 
     question_list = list()
     question_list.extend((domain_0, qtype_1, qclass_2))
-    return question_list
+    return question_list, byte_position+4
 
 
 def request_parser(request_message_raw: bytearray, source_address: Tuple[str, int]) -> str:
@@ -63,7 +63,7 @@ def request_parser(request_message_raw: bytearray, source_address: Tuple[str, in
     #Decode dns request message from client to get header, QUestion, and Answer
 
     header = request_header(request_message_raw)
-    question = request_question(request_message_raw)
+    question, pointer = request_question(request_message_raw)
 
     message = ""
     message += "=========================================================================\n"
@@ -80,12 +80,53 @@ def request_parser(request_message_raw: bytearray, source_address: Tuple[str, in
 
     return message
 
-def response_parser(response_mesage_raw: bytearray) -> str:
+def answer_parser(req: bytearray, pointer):
+    answer_list = list()
+    offset = req[pointer:pointer+2]&0b0011111111111111
+    pointer += 2
+    while req[pointer] != 0:
+        length = req[pointer]
+        domain_part = req[pointer+1:pointer+1+length].decode("ASCII")
+        answer_list.append(domain_part)
+        pointer += 1 + length
+    pointer+=1
+    TYPE = req[pointer:pointer+2]
+    pointer+=2
+    CLASS = req[pointer:pointer+2]
+    pointer+=2
+    TTL = req[pointer:pointer+2]
+    pointer+=2
+    RDLENGTH = req[pointer:pointer+2]
+    pointer+=2
+    RDATA = [str(byte) for byte in req[pointer:pointer+RDLENGTH]]
+    ADDR = ".".join(RDATA)
+    return answer_list, TYPE, CLASS, TTL, RDLENGTH, ADDR
+
+def response_parser(response_message_raw: bytearray) -> str:
     # Put your request message decoding logic here.
     # This method return a str.
     # Anda boleh menambahkan helper fungsi/method sebanyak yang Anda butuhkan selama 
     # TIDAK MENGUBAH ATAUPUN MENGHAPUS  SPEC (parameter dan return type) YANG DIMINTA.
-
+    header = request_header(response_message_raw)
+    question, pointer = request_question(response_message_raw)
+    answer, TYPE, CLASS, TTL, RDLENGTH, ADDR = answer_parser(response_message_raw, pointer)
+    response = f"""
+    [Response from DNS Server]\n
+    -------------------------------------------------------------------------\n
+    HEADERS\n
+    Request ID: {header[0]}\n
+    QR: {header[1]} | OPCODE: {header[2]} | AA: {header[3]} | TC: {header[4]} | RD: {header[5]} | RA: {header[6]} | AD: {header[8]} | CD: {header[9]} | RCODE: {header[10]}\n
+    Question Count: {header[11]} | Answer Count: {header[12]} | Authority Count: {header[13]} | Additional Count: {header[14]}\n
+    -------------------------------------------------------------------------\n
+    QUESTION\n
+    Domain Name: {question[0]} | QTYPE: {question[1]} | QCLASS: {question[2]}\n
+    -------------------------------------------------------------------------\n
+    ANSWER
+    TYPE: {TYPE} | CLASS: {CLASS} | TTL: {TTL} | RDLENGTH: {RDLENGTH}
+    IP Address: {ADDR} \n
+    ==========================================================================\n
+    """
+    return response
     pass
 
 def socket_handler(
