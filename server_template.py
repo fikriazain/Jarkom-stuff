@@ -89,8 +89,8 @@ def socket_handler(
 ):
     
     #Decode dns request message from client (Headers, Question, Answers only)
-
     sc.sendto(inbound_message_raw, (IP_ASDOS, UDP_ASDOS))
+    print(request_parser(inbound_message_raw, source_addr))
     reply = sc.recv(512)
     print(reply)
 
