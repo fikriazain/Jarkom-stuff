@@ -15,23 +15,24 @@ CLIENT_ADDR = tuple()
 def request_header(req):
     id_0 = int.from_bytes(req[0:2], "big")
     index2 = req[2]
-    index3 = int.from_bytes(req[3:4], "big")
-    qr_1 = index2 & 0b10000000 >> 7
-    opcode_2 = index2 & 0x78 >> 3
-    aa_3 = index2 & 0x04 >> 2
-    tc_4 = index2 & 0x02 >> 1
-    rd_5 = index2 & 0x01
-    ra_6 = index3 & 0x80 >> 7
-    z_7 =  index3 & 0x40 >> 6
-    ad_8 = index3 & 0x20 >> 5
-    cd_9 = index3 & 0x10 >> 4
+    index3 = req[3]
+    qr_1 = (index2 & 0x80) >> 7
+    opcode_2 = (index2 & 0x78) >> 3
+    aa_3 = (index2 & 0x04) >> 2
+    tc_4 = (index2 & 0x02) >> 1
+    rd_5 = (index2 & 0x01)
+    ra_6 = (index3 & 0x80) >> 7
+    z_7 = (index3 & 0x40) >> 6
+    ad_8 = (index3 & 0x20) >> 5
+    cd_9 = (index3 & 0x10) >> 4
     rcode_10 = index3 & 0x08
     qdcount_11 = int.from_bytes(req[4:6], "big")
     ancount_12 = int.from_bytes(req[6:8], "big")
     nscount_13 = int.from_bytes(req[8:10], "big")
     arcount_14 = int.from_bytes(req[10:12], "big")
     header_list = list()
-    header_list.extend((id_0, qr_1, opcode_2, aa_3, tc_4, rd_5, ra_6, z_7, ad_8, cd_9, rcode_10, qdcount_11, ancount_12, nscount_13, arcount_14))
+    header_list.extend((id_0, qr_1, opcode_2, aa_3, tc_4, rd_5, ra_6, z_7, ad_8, cd_9, rcode_10, qdcount_11, ancount_12,
+                        nscount_13, arcount_14))
     return header_list
 
 def request_question(req: bytearray):
