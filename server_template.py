@@ -58,7 +58,7 @@ def request_question(req: bytearray):
 def request_parser(request_message_raw: bytearray, source_address: Tuple[str, int]) -> str:
     # Put your request message decoding logic here.
     # This method return a str.
-    # Anda boleh menambahkan helper fungsi/method sebanyak yang Anda butuhkan selama 
+    # Anda boleh menambahkan helper fungsi/method sebanyak yang Anda butuhkan selama
     # TIDAK MENGUBAH ATAUPUN MENGHAPUS SPEC (parameter dan return type) YANG DIMINTA.
     #Decode dns request message from client to get header, QUestion, and Answer
 
@@ -82,21 +82,20 @@ def request_parser(request_message_raw: bytearray, source_address: Tuple[str, in
 
 def answer_parser(req: bytearray, pointer):
     answer_list = list()
-    offset = req[pointer:pointer+2]&0b0011111111111111
+    offset = int.from_bytes(req[pointer:pointer+2], "big")&0b0011111111111111
     pointer += 2
     while req[pointer] != 0:
         length = req[pointer]
         domain_part = req[pointer+1:pointer+1+length].decode("ASCII")
         answer_list.append(domain_part)
         pointer += 1 + length
-    pointer+=1
-    TYPE = req[pointer:pointer+2]
+    TYPE = int.from_bytes(req[pointer:pointer+2], "big")
     pointer+=2
-    CLASS = req[pointer:pointer+2]
+    CLASS = int.from_bytes(req[pointer:pointer+2], "big")
     pointer+=2
-    TTL = req[pointer:pointer+2]
-    pointer+=2
-    RDLENGTH = req[pointer:pointer+2]
+    TTL = int.from_bytes(req[pointer:pointer+4], "big")
+    pointer+=4
+    RDLENGTH = int.from_bytes(req[pointer:pointer+2], "big")
     pointer+=2
     RDATA = [str(byte) for byte in req[pointer:pointer+RDLENGTH]]
     ADDR = ".".join(RDATA)
@@ -105,7 +104,7 @@ def answer_parser(req: bytearray, pointer):
 def response_parser(response_message_raw: bytearray) -> str:
     # Put your request message decoding logic here.
     # This method return a str.
-    # Anda boleh menambahkan helper fungsi/method sebanyak yang Anda butuhkan selama 
+    # Anda boleh menambahkan helper fungsi/method sebanyak yang Anda butuhkan selama
     # TIDAK MENGUBAH ATAUPUN MENGHAPUS  SPEC (parameter dan return type) YANG DIMINTA.
     header = request_header(response_message_raw)
     question, pointer = request_question(response_message_raw)
@@ -132,24 +131,18 @@ def response_parser(response_message_raw: bytearray) -> str:
 def socket_handler(
     sc: socket.socket, inbound_message_raw: bytearray, source_addr: Tuple[str, int]
 ):
-    
+
     #Decode dns request message from client (Headers, Question, Answers only)
-    print(inbound_message_raw)
-    global CLIENT_ADDR
-    if source_addr[0] != IP_ASDOS:
-        CLIENT_ADDR = source_addr
-        outgoing_addr = (IP_ASDOS, UDP_ASDOS)
-        print("ini dari client")
-    else:
-        outgoing_addr = CLIENT_ADDR
-        print("ini dari asdos")
-    sc.sendto(inbound_message_raw, outgoing_addr)
-    reply = sc.recv(512)
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as forward_sc:
+        forward_sc.sendto(inbound_message_raw, (IP_ASDOS, UDP_ASDOS))
+        dns_response, _ = forward_sc.recvfrom(BUFFER_SIZE)
 
+        print(response_parser(bytearray(dns_response)))
 
+        sc.sendto(dns_response, source_addr)
 
 def main():
-    # Put the rest of your program's logic here (socket etc.). 
+    # Put the rest of your program's logic here (socket etc.).
     # Pastikan blok socket Anda berada pada fungsi ini.
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sc:
         sc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -167,4 +160,4 @@ def main():
             thread_job.start()
 # DO NOT ERASE THIS PART!
 if __name__ == "__main__":
-    main() 
+    main()
