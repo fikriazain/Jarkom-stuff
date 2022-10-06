@@ -65,18 +65,19 @@ def request_parser(request_message_raw: bytearray, source_address: Tuple[str, in
     header = request_header(request_message_raw)
     question, pointer = request_question(request_message_raw)
 
-    message = ""
-    message += "=========================================================================\n"
-    message += f"[Request from ('{source_address[0]}', {source_address[1]})]\n"
-    message += "-------------------------------------------------------------------------\n"
-    message += "HEADERS\n"
-    message += f"Request ID: {header[0]}\n"
-    message += f"QR: {header[1]} | OPCODE: {header[2]} | AA: {header[3]} | TC: {header[4]} | RD: {header[5]} | RA: {header[6]} | AD: {header[8]} | CD: {header[9]} | RCODE: {header[10]}\n"
-    message += f"Question Count: {header[11]} | Answer Count: {header[12]} | Authority Count: {header[13]} | Additional Count: {header[14]}\n"
-    message += "-------------------------------------------------------------------------\n"
-    message += "QUESTION\n"
-    message += f"Domain Name: {question[0]} | QTYPE: {question[1]} | QCLASS: {question[2]}\n"
-    message += "-------------------------------------------------------------------------\n"
+    message = f"""
+    =========================================================================\n
+    [Request from ('{source_address[0]}', {source_address[1]})]\n
+    -------------------------------------------------------------------------\n
+    HEADERS\n
+    Request ID: {header[0]}\n
+    QR: {header[1]} | OPCODE: {header[2]} | AA: {header[3]} | TC: {header[4]} | RD: {header[5]} | RA: {header[6]} | AD: {header[8]} | CD: {header[9]} | RCODE: {header[10]}\n
+    Question Count: {header[11]} | Answer Count: {header[12]} | Authority Count: {header[13]} | Additional Count: {header[14]}\n
+    -------------------------------------------------------------------------\n
+    QUESTION\n
+    Domain Name: {question[0]} | QTYPE: {question[1]} | QCLASS: {question[2]}\n
+    -------------------------------------------------------------------------\n
+    """
 
     return message
 
